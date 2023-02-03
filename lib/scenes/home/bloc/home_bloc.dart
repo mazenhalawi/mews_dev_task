@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:movie_search/scenes/home/models/movie.dart';
@@ -17,11 +18,9 @@ part 'home_event.dart';
 part 'home_state.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
-  final PublishSubject<String> _searchMovieController = PublishSubject();
   final PublishSubject _autoFetchController = PublishSubject();
 
   final HomeRepository repository;
-  late final StreamSubscription _subscriptionSearch;
   late final StreamSubscription _subscriptionFetcher;
 
   bool get hasMoreRecords {
@@ -42,16 +41,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   HomeBloc({required this.repository})
       : super(const HomeState.initial(viewModel: HomeViewModel(movies: []))) {
-    _subscriptionSearch = _searchMovieController
-        .debounceTime(const Duration(milliseconds: 500))
-        .listen((searchText) {
-      if (searchText.trim().isNotEmpty) {
-        add(HomeEvent.searchMovies(searchText));
-      } else {
-        add(const HomeEvent.clearList());
-      }
-    });
-
     _subscriptionFetcher = _autoFetchController
         .debounceTime(const Duration(milliseconds: 300))
         .listen((event) {
@@ -60,16 +49,36 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
     });
 
+    on<HomeEventFetchMoreRecords>(
+      (event, emit) async {
+        await _mapFetchMoreRecordsEventToState(emit);
+      },
+      transformer: droppable(),
+    );
+
+    on<HomeEventDidChangeSearch>(
+      (event, emit) async {
+        final searchText = event.value.trim();
+        if (searchText.isNotEmpty) {
+          await _mapSearchMoviesEventToState(searchText, emit);
+        } else {
+          _mapClearListEventToState(emit);
+        }
+      },
+      transformer: ((events, mapper) => events
+          .debounceTime(const Duration(milliseconds: 500))
+          .flatMap(mapper)),
+    );
+
     on<HomeEvent>((event, emit) {
       event.when(
-        didChangeSearch: (searchText) =>
-            _searchMovieController.sink.add(searchText),
-        searchMovies: (searchText) => _mapSearchMoviesEventToState(searchText),
-        clearList: () => _mapClearListEventToState(),
-        retrySearch: (searchText) =>
-            _searchMovieController.sink.add(searchText),
+        didChangeSearch: (searchText) => null,
+        searchMovies: (searchText) =>
+            _mapSearchMoviesEventToState(searchText, emit),
+        clearList: () => _mapClearListEventToState(emit),
+        retrySearch: (searchText) => null,
         requestMoreRecords: () => _autoFetchController.sink.add(true),
-        fetchMoreRecords: () => _mapFetchMoreRecordsEventToState(),
+        fetchMoreRecords: () => null,
       );
     });
   }
@@ -78,14 +87,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   Future<void> close() {
     _subscriptionFetcher.cancel();
     _autoFetchController.close();
-    _subscriptionSearch.cancel();
-    _searchMovieController.close();
     return super.close();
   }
 }
 
 extension MapEventsToStates on HomeBloc {
-  void _mapFetchMoreRecordsEventToState() async {
+  Future _mapFetchMoreRecordsEventToState(Emitter emit) async {
     if (state.viewModel.response == null || isFetchingRecords) return;
 
     _isFetchingRecords = true;
@@ -122,7 +129,7 @@ extension MapEventsToStates on HomeBloc {
     _isFetchingRecords = false;
   }
 
-  void _mapClearListEventToState() {
+  void _mapClearListEventToState(Emitter emit) {
     emit(HomeState.loadSuccess(
         viewModel: state.viewModel.copyWith(
       movies: [],
@@ -130,7 +137,7 @@ extension MapEventsToStates on HomeBloc {
     )));
   }
 
-  void _mapSearchMoviesEventToState(String searchText) async {
+  Future _mapSearchMoviesEventToState(String searchText, Emitter emit) async {
     emit(HomeState.loading(viewModel: state.viewModel));
 
     final request = SearchMoviesRequest(

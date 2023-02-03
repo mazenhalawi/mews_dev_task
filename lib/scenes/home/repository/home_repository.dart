@@ -13,13 +13,13 @@ class HomeRepository {
 
   Future<Either<Failure, SearchMoviesResponse>> searchMovies(
       {required SearchMoviesRequest request}) async {
-    // if (_cache.containsKey(request.searchText.toLowerCase())) {
-    //   final savedResponse = _cache[request.searchText.toLowerCase()];
+    if (_cache.containsKey(request.searchText.toLowerCase())) {
+      final savedResponse = _cache[request.searchText.toLowerCase()];
 
-    //   if (savedResponse?.page == request.page) {
-    //     return Right(_cache[request.searchText]!);
-    //   }
-    // }
+      if (savedResponse?.page == request.page) {
+        return Right(_cache[request.searchText]!);
+      }
+    }
     try {
       final url = Uri.https(
         BASE_URL,
@@ -34,6 +34,9 @@ class HomeRepository {
       final json = jsonDecode(utf8.decode(response.bodyBytes));
       final result = SearchMoviesResponse.fromJson(json);
       _cache[request.searchText.toLowerCase()] = result;
+
+      print(
+          'FOUND RESULT FOR SEARCH: ${request.searchText}: ${result.totalResults}');
 
       return Right(result);
     } on ConnectionFailure catch (e) {
