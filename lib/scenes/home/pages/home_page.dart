@@ -25,14 +25,7 @@ class _HomePageState extends State<HomePage> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _textController = TextEditingController();
   late final _scrollControllerListener = () {
-    final hasMoreRecords = context.read<HomeBloc>().hasMoreRecords;
-    final isFetchingRecords = context.read<HomeBloc>().isFetchingRecords;
-    final didPassAutoFetchZone = _scrollController.offset >
-        (_scrollController.position.maxScrollExtent * 0.95);
-
-    if (didPassAutoFetchZone && hasMoreRecords && !isFetchingRecords) {
-      context.read<HomeBloc>().add(const HomeEvent.requestMoreRecords());
-    }
+    context.read<HomeBloc>().add(const HomeEvent.requestMoreRecords());
   };
 
   @override
@@ -68,20 +61,21 @@ class _HomePageState extends State<HomePage> {
         buildWhen: (prev, curr) => !curr.isListenerState,
         listener: (context, state) {
           state.maybeWhen(
-            displayAlert: (title, message, shouldPopOut, isListenerState) =>
-                AlertBox(title: title, message: message).show(context).then(
-                    (value) =>
-                        shouldPopOut ? Navigator.of(context).pop() : null),
+            displayAlert:
+                (title, message, viewModel, shouldPopOut, isListenerState) =>
+                    AlertBox(title: title, message: message).show(context).then(
+                        (value) =>
+                            shouldPopOut ? Navigator.of(context).pop() : null),
             orElse: () => throw UnimplementedError(
                 '$state was not implemented in the listener of $this'),
           );
         },
         builder: (context, state) {
           return state.maybeWhen(
-            initial: (_) => _getInitialState(context),
+            initial: (viewModel, _) => _getInitialState(context),
             loading: (viewModel, _) =>
                 _getLoadingState(context: context, viewModel: viewModel),
-            loadFailure: (failure, _) =>
+            loadFailure: (viewModel, failure, _) =>
                 _getLoadFailureState(context: context, failure: failure),
             loadSuccess: (viewModel, _) =>
                 _getLoadSuccessState(context: context, viewModel: viewModel),

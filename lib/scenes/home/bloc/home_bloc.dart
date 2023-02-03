@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:movie_search/scenes/home/models/movie.dart';
@@ -9,7 +10,6 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../../common/models/failure.dart';
 import '../models/search_movies_request.dart';
-import '../models/search_movies_response.dart';
 import '../repository/home_repository.dart';
 import '../viewmodel/home_viewmodel.dart';
 
@@ -18,23 +18,20 @@ part 'home_event.dart';
 part 'home_state.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
-  final PublishSubject<String> _searchMovieController = PublishSubject();
   final PublishSubject _autoFetchController = PublishSubject();
 
   final HomeRepository repository;
-  late final StreamSubscription _subscriptionSearch;
   late final StreamSubscription _subscriptionFetcher;
-  HomeViewModel _viewModel = const HomeViewModel(movies: []);
-
-  SearchMoviesResponse? _response;
-  String _searchPhrase = '';
 
   bool get hasMoreRecords {
-    if (_response == null) return false;
+    if (state.viewModel.response == null) return false;
 
-    if (_response!.totalPages == _response!.page) return false;
+    if (state.viewModel.response!.totalPages ==
+        state.viewModel.response!.page) {
+      return false;
+    }
 
-    if (_response!.totalPages == 0) return false;
+    if (state.viewModel.response!.totalPages == 0) return false;
 
     return true;
   }
@@ -42,17 +39,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   bool _isFetchingRecords = false;
   bool get isFetchingRecords => _isFetchingRecords;
 
-  HomeBloc({required this.repository}) : super(const HomeState.initial()) {
-    _subscriptionSearch = _searchMovieController
-        .debounceTime(const Duration(milliseconds: 500))
-        .listen((searchText) {
-      if (searchText.trim().isNotEmpty) {
-        add(HomeEvent.searchMovies(searchText));
-      } else {
-        add(const HomeEvent.clearList());
-      }
-    });
-
+  HomeBloc({required this.repository})
+      : super(const HomeState.initial(viewModel: HomeViewModel(movies: []))) {
     _subscriptionFetcher = _autoFetchController
         .debounceTime(const Duration(milliseconds: 300))
         .listen((event) {
@@ -61,16 +49,36 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
     });
 
+    on<HomeEventFetchMoreRecords>(
+      (event, emit) async {
+        await _mapFetchMoreRecordsEventToState(emit);
+      },
+      transformer: droppable(),
+    );
+
+    on<HomeEventDidChangeSearch>(
+      (event, emit) async {
+        final searchText = event.value.trim();
+        if (searchText.isNotEmpty) {
+          await _mapSearchMoviesEventToState(searchText, emit);
+        } else {
+          _mapClearListEventToState(emit);
+        }
+      },
+      transformer: ((events, mapper) => events
+          .debounceTime(const Duration(milliseconds: 500))
+          .flatMap(mapper)),
+    );
+
     on<HomeEvent>((event, emit) {
       event.when(
-        didChangeSearch: (searchText) =>
-            _searchMovieController.sink.add(searchText),
-        searchMovies: (searchText) => _mapSearchMoviesEventToState(searchText),
-        clearList: () => _mapClearListEventToState(),
-        retrySearch: (searchText) =>
-            _searchMovieController.sink.add(searchText),
+        didChangeSearch: (searchText) => null,
+        searchMovies: (searchText) =>
+            _mapSearchMoviesEventToState(searchText, emit),
+        clearList: () => _mapClearListEventToState(emit),
+        retrySearch: (searchText) => null,
         requestMoreRecords: () => _autoFetchController.sink.add(true),
-        fetchMoreRecords: () => _mapFetchMoreRecordsEventToState(),
+        fetchMoreRecords: () => null,
       );
     });
   }
@@ -79,74 +87,86 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   Future<void> close() {
     _subscriptionFetcher.cancel();
     _autoFetchController.close();
-    _subscriptionSearch.cancel();
-    _searchMovieController.close();
     return super.close();
   }
 }
 
 extension MapEventsToStates on HomeBloc {
-  void _mapFetchMoreRecordsEventToState() async {
-    if (_response == null || isFetchingRecords) return;
+  Future _mapFetchMoreRecordsEventToState(Emitter emit) async {
+    if (state.viewModel.response == null || isFetchingRecords) return;
 
     _isFetchingRecords = true;
 
     final request = SearchMoviesRequest(
-        searchText: _searchPhrase, page: _response!.nextPage);
+        searchText: state.viewModel.searchPhrase,
+        page: state.viewModel.response!.nextPage);
 
     final response = await repository.searchMovies(request: request);
 
     response.fold(
       (failure) {
-        emit(const HomeState.displayAlert(
+        emit(HomeState.displayAlert(
+            viewModel: state.viewModel,
             title: "Fetch more records\nfailed",
             message:
                 "We couldn't fetch more records. Please check your internet connection and try again."));
-        _viewModel = _viewModel.copyWith(didFailToLoadMoreRecords: true);
-        emit(HomeState.loadSuccess(viewModel: _viewModel));
+
+        emit(HomeState.loadSuccess(
+            viewModel:
+                state.viewModel.copyWith(didFailToLoadMoreRecords: true)));
       },
       (searchResponse) {
-        _response = searchResponse;
-        List<Movie> updatedMovies = [..._viewModel.movies];
-        updatedMovies.addAll(searchResponse.movies);
+        List<Movie> updatedMovies = [
+          ...state.viewModel.movies,
+          ...searchResponse.movies
+        ];
 
-        _viewModel = _viewModel.copyWith(movies: updatedMovies);
-        emit(HomeState.loadSuccess(viewModel: _viewModel));
+        emit(HomeState.loadSuccess(
+            viewModel: state.viewModel
+                .copyWith(movies: updatedMovies, response: searchResponse)));
       },
     );
     _isFetchingRecords = false;
   }
 
-  void _mapClearListEventToState() {
-    _viewModel = _viewModel.copyWith(movies: []);
-    _response = null;
-    emit(HomeState.loadSuccess(viewModel: _viewModel));
+  void _mapClearListEventToState(Emitter emit) {
+    emit(HomeState.loadSuccess(
+        viewModel: state.viewModel.copyWith(
+      movies: [],
+      response: null,
+    )));
   }
 
-  void _mapSearchMoviesEventToState(String searchText) async {
-    emit(HomeState.loading(viewModel: _viewModel));
-
-    _searchPhrase = searchText;
+  Future _mapSearchMoviesEventToState(String searchText, Emitter emit) async {
+    emit(HomeState.loading(viewModel: state.viewModel));
 
     final request = SearchMoviesRequest(
-        searchText: searchText, page: _response?.nextPage ?? 1);
+        searchText: searchText, page: state.viewModel.response?.nextPage ?? 1);
 
     final response = await repository.searchMovies(request: request);
 
     response.fold(
       (failure) {
         if (failure is ConnectionFailure) {
-          emit(HomeState.loadFailure(failure: failure));
+          emit(HomeState.loadFailure(
+              failure: failure,
+              viewModel: state.viewModel.copyWith(searchPhrase: searchText)));
           return;
         }
-        emit(
-            HomeState.displayAlert(title: "Failure", message: failure.message));
-        emit(HomeState.loadSuccess(viewModel: _viewModel));
+        emit(HomeState.displayAlert(
+            title: "Failure",
+            message: failure.message,
+            viewModel: state.viewModel.copyWith(searchPhrase: searchText)));
+        emit(HomeState.loadSuccess(
+            viewModel: state.viewModel.copyWith(searchPhrase: searchText)));
       },
       (searchResponse) {
-        _response = searchResponse;
-        _viewModel = _viewModel.copyWith(movies: searchResponse.movies);
-        emit(HomeState.loadSuccess(viewModel: _viewModel));
+        emit(HomeState.loadSuccess(
+            viewModel: state.viewModel.copyWith(
+          movies: searchResponse.movies,
+          response: searchResponse,
+          searchPhrase: searchText,
+        )));
       },
     );
   }

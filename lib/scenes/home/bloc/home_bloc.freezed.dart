@@ -969,42 +969,49 @@ abstract class HomeEventFetchMoreRecords implements HomeEvent {
 
 /// @nodoc
 mixin _$HomeState {
+  HomeViewModel get viewModel => throw _privateConstructorUsedError;
   bool get isListenerState => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(bool isListenerState) initial,
-    required TResult Function(HomeViewModel? viewModel, bool isListenerState)
+    required TResult Function(HomeViewModel viewModel, bool isListenerState)
+        initial,
+    required TResult Function(HomeViewModel viewModel, bool isListenerState)
         loading,
-    required TResult Function(Failure failure, bool isListenerState)
+    required TResult Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)
         loadFailure,
     required TResult Function(HomeViewModel viewModel, bool isListenerState)
         loadSuccess,
-    required TResult Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)
+    required TResult Function(String title, String message,
+            HomeViewModel viewModel, bool shouldPopOut, bool isListenerState)
         displayAlert,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(bool isListenerState)? initial,
-    TResult? Function(HomeViewModel? viewModel, bool isListenerState)? loading,
-    TResult? Function(Failure failure, bool isListenerState)? loadFailure,
+    TResult? Function(HomeViewModel viewModel, bool isListenerState)? initial,
+    TResult? Function(HomeViewModel viewModel, bool isListenerState)? loading,
+    TResult? Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)?
+        loadFailure,
     TResult? Function(HomeViewModel viewModel, bool isListenerState)?
         loadSuccess,
-    TResult? Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)?
+    TResult? Function(String title, String message, HomeViewModel viewModel,
+            bool shouldPopOut, bool isListenerState)?
         displayAlert,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(bool isListenerState)? initial,
-    TResult Function(HomeViewModel? viewModel, bool isListenerState)? loading,
-    TResult Function(Failure failure, bool isListenerState)? loadFailure,
+    TResult Function(HomeViewModel viewModel, bool isListenerState)? initial,
+    TResult Function(HomeViewModel viewModel, bool isListenerState)? loading,
+    TResult Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)?
+        loadFailure,
     TResult Function(HomeViewModel viewModel, bool isListenerState)?
         loadSuccess,
-    TResult Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)?
+    TResult Function(String title, String message, HomeViewModel viewModel,
+            bool shouldPopOut, bool isListenerState)?
         displayAlert,
     required TResult orElse(),
   }) =>
@@ -1048,7 +1055,7 @@ abstract class $HomeStateCopyWith<$Res> {
   factory $HomeStateCopyWith(HomeState value, $Res Function(HomeState) then) =
       _$HomeStateCopyWithImpl<$Res, HomeState>;
   @useResult
-  $Res call({bool isListenerState});
+  $Res call({HomeViewModel viewModel, bool isListenerState});
 }
 
 /// @nodoc
@@ -1064,9 +1071,14 @@ class _$HomeStateCopyWithImpl<$Res, $Val extends HomeState>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? viewModel = null,
     Object? isListenerState = null,
   }) {
     return _then(_value.copyWith(
+      viewModel: null == viewModel
+          ? _value.viewModel
+          : viewModel // ignore: cast_nullable_to_non_nullable
+              as HomeViewModel,
       isListenerState: null == isListenerState
           ? _value.isListenerState
           : isListenerState // ignore: cast_nullable_to_non_nullable
@@ -1083,7 +1095,7 @@ abstract class _$$HomeStateInitialCopyWith<$Res>
       __$$HomeStateInitialCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({bool isListenerState});
+  $Res call({HomeViewModel viewModel, bool isListenerState});
 }
 
 /// @nodoc
@@ -1097,9 +1109,14 @@ class __$$HomeStateInitialCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? viewModel = null,
     Object? isListenerState = null,
   }) {
     return _then(_$HomeStateInitial(
+      viewModel: null == viewModel
+          ? _value.viewModel
+          : viewModel // ignore: cast_nullable_to_non_nullable
+              as HomeViewModel,
       isListenerState: null == isListenerState
           ? _value.isListenerState
           : isListenerState // ignore: cast_nullable_to_non_nullable
@@ -1111,15 +1128,18 @@ class __$$HomeStateInitialCopyWithImpl<$Res>
 /// @nodoc
 
 class _$HomeStateInitial implements HomeStateInitial {
-  const _$HomeStateInitial({this.isListenerState = false});
+  const _$HomeStateInitial(
+      {required this.viewModel, this.isListenerState = false});
 
+  @override
+  final HomeViewModel viewModel;
   @override
   @JsonKey()
   final bool isListenerState;
 
   @override
   String toString() {
-    return 'HomeState.initial(isListenerState: $isListenerState)';
+    return 'HomeState.initial(viewModel: $viewModel, isListenerState: $isListenerState)';
   }
 
   @override
@@ -1127,12 +1147,14 @@ class _$HomeStateInitial implements HomeStateInitial {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$HomeStateInitial &&
+            (identical(other.viewModel, viewModel) ||
+                other.viewModel == viewModel) &&
             (identical(other.isListenerState, isListenerState) ||
                 other.isListenerState == isListenerState));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, isListenerState);
+  int get hashCode => Object.hash(runtimeType, viewModel, isListenerState);
 
   @JsonKey(ignore: true)
   @override
@@ -1143,50 +1165,56 @@ class _$HomeStateInitial implements HomeStateInitial {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(bool isListenerState) initial,
-    required TResult Function(HomeViewModel? viewModel, bool isListenerState)
+    required TResult Function(HomeViewModel viewModel, bool isListenerState)
+        initial,
+    required TResult Function(HomeViewModel viewModel, bool isListenerState)
         loading,
-    required TResult Function(Failure failure, bool isListenerState)
+    required TResult Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)
         loadFailure,
     required TResult Function(HomeViewModel viewModel, bool isListenerState)
         loadSuccess,
-    required TResult Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)
+    required TResult Function(String title, String message,
+            HomeViewModel viewModel, bool shouldPopOut, bool isListenerState)
         displayAlert,
   }) {
-    return initial(isListenerState);
+    return initial(viewModel, isListenerState);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(bool isListenerState)? initial,
-    TResult? Function(HomeViewModel? viewModel, bool isListenerState)? loading,
-    TResult? Function(Failure failure, bool isListenerState)? loadFailure,
+    TResult? Function(HomeViewModel viewModel, bool isListenerState)? initial,
+    TResult? Function(HomeViewModel viewModel, bool isListenerState)? loading,
+    TResult? Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)?
+        loadFailure,
     TResult? Function(HomeViewModel viewModel, bool isListenerState)?
         loadSuccess,
-    TResult? Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)?
+    TResult? Function(String title, String message, HomeViewModel viewModel,
+            bool shouldPopOut, bool isListenerState)?
         displayAlert,
   }) {
-    return initial?.call(isListenerState);
+    return initial?.call(viewModel, isListenerState);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(bool isListenerState)? initial,
-    TResult Function(HomeViewModel? viewModel, bool isListenerState)? loading,
-    TResult Function(Failure failure, bool isListenerState)? loadFailure,
+    TResult Function(HomeViewModel viewModel, bool isListenerState)? initial,
+    TResult Function(HomeViewModel viewModel, bool isListenerState)? loading,
+    TResult Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)?
+        loadFailure,
     TResult Function(HomeViewModel viewModel, bool isListenerState)?
         loadSuccess,
-    TResult Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)?
+    TResult Function(String title, String message, HomeViewModel viewModel,
+            bool shouldPopOut, bool isListenerState)?
         displayAlert,
     required TResult orElse(),
   }) {
     if (initial != null) {
-      return initial(isListenerState);
+      return initial(viewModel, isListenerState);
     }
     return orElse();
   }
@@ -1233,9 +1261,12 @@ class _$HomeStateInitial implements HomeStateInitial {
 }
 
 abstract class HomeStateInitial implements HomeState {
-  const factory HomeStateInitial({final bool isListenerState}) =
-      _$HomeStateInitial;
+  const factory HomeStateInitial(
+      {required final HomeViewModel viewModel,
+      final bool isListenerState}) = _$HomeStateInitial;
 
+  @override
+  HomeViewModel get viewModel;
   @override
   bool get isListenerState;
   @override
@@ -1252,7 +1283,7 @@ abstract class _$$HomeStateLoadingCopyWith<$Res>
       __$$HomeStateLoadingCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({HomeViewModel? viewModel, bool isListenerState});
+  $Res call({HomeViewModel viewModel, bool isListenerState});
 }
 
 /// @nodoc
@@ -1266,14 +1297,14 @@ class __$$HomeStateLoadingCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? viewModel = freezed,
+    Object? viewModel = null,
     Object? isListenerState = null,
   }) {
     return _then(_$HomeStateLoading(
-      viewModel: freezed == viewModel
+      viewModel: null == viewModel
           ? _value.viewModel
           : viewModel // ignore: cast_nullable_to_non_nullable
-              as HomeViewModel?,
+              as HomeViewModel,
       isListenerState: null == isListenerState
           ? _value.isListenerState
           : isListenerState // ignore: cast_nullable_to_non_nullable
@@ -1285,10 +1316,11 @@ class __$$HomeStateLoadingCopyWithImpl<$Res>
 /// @nodoc
 
 class _$HomeStateLoading implements HomeStateLoading {
-  const _$HomeStateLoading({this.viewModel, this.isListenerState = false});
+  const _$HomeStateLoading(
+      {required this.viewModel, this.isListenerState = false});
 
   @override
-  final HomeViewModel? viewModel;
+  final HomeViewModel viewModel;
   @override
   @JsonKey()
   final bool isListenerState;
@@ -1321,15 +1353,17 @@ class _$HomeStateLoading implements HomeStateLoading {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(bool isListenerState) initial,
-    required TResult Function(HomeViewModel? viewModel, bool isListenerState)
+    required TResult Function(HomeViewModel viewModel, bool isListenerState)
+        initial,
+    required TResult Function(HomeViewModel viewModel, bool isListenerState)
         loading,
-    required TResult Function(Failure failure, bool isListenerState)
+    required TResult Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)
         loadFailure,
     required TResult Function(HomeViewModel viewModel, bool isListenerState)
         loadSuccess,
-    required TResult Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)
+    required TResult Function(String title, String message,
+            HomeViewModel viewModel, bool shouldPopOut, bool isListenerState)
         displayAlert,
   }) {
     return loading(viewModel, isListenerState);
@@ -1338,13 +1372,15 @@ class _$HomeStateLoading implements HomeStateLoading {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(bool isListenerState)? initial,
-    TResult? Function(HomeViewModel? viewModel, bool isListenerState)? loading,
-    TResult? Function(Failure failure, bool isListenerState)? loadFailure,
+    TResult? Function(HomeViewModel viewModel, bool isListenerState)? initial,
+    TResult? Function(HomeViewModel viewModel, bool isListenerState)? loading,
+    TResult? Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)?
+        loadFailure,
     TResult? Function(HomeViewModel viewModel, bool isListenerState)?
         loadSuccess,
-    TResult? Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)?
+    TResult? Function(String title, String message, HomeViewModel viewModel,
+            bool shouldPopOut, bool isListenerState)?
         displayAlert,
   }) {
     return loading?.call(viewModel, isListenerState);
@@ -1353,13 +1389,15 @@ class _$HomeStateLoading implements HomeStateLoading {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(bool isListenerState)? initial,
-    TResult Function(HomeViewModel? viewModel, bool isListenerState)? loading,
-    TResult Function(Failure failure, bool isListenerState)? loadFailure,
+    TResult Function(HomeViewModel viewModel, bool isListenerState)? initial,
+    TResult Function(HomeViewModel viewModel, bool isListenerState)? loading,
+    TResult Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)?
+        loadFailure,
     TResult Function(HomeViewModel viewModel, bool isListenerState)?
         loadSuccess,
-    TResult Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)?
+    TResult Function(String title, String message, HomeViewModel viewModel,
+            bool shouldPopOut, bool isListenerState)?
         displayAlert,
     required TResult orElse(),
   }) {
@@ -1412,10 +1450,11 @@ class _$HomeStateLoading implements HomeStateLoading {
 
 abstract class HomeStateLoading implements HomeState {
   const factory HomeStateLoading(
-      {final HomeViewModel? viewModel,
+      {required final HomeViewModel viewModel,
       final bool isListenerState}) = _$HomeStateLoading;
 
-  HomeViewModel? get viewModel;
+  @override
+  HomeViewModel get viewModel;
   @override
   bool get isListenerState;
   @override
@@ -1432,7 +1471,7 @@ abstract class _$$HomeStateLoadFailureCopyWith<$Res>
       __$$HomeStateLoadFailureCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({Failure failure, bool isListenerState});
+  $Res call({HomeViewModel viewModel, Failure failure, bool isListenerState});
 }
 
 /// @nodoc
@@ -1446,10 +1485,15 @@ class __$$HomeStateLoadFailureCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? viewModel = null,
     Object? failure = null,
     Object? isListenerState = null,
   }) {
     return _then(_$HomeStateLoadFailure(
+      viewModel: null == viewModel
+          ? _value.viewModel
+          : viewModel // ignore: cast_nullable_to_non_nullable
+              as HomeViewModel,
       failure: null == failure
           ? _value.failure
           : failure // ignore: cast_nullable_to_non_nullable
@@ -1466,8 +1510,12 @@ class __$$HomeStateLoadFailureCopyWithImpl<$Res>
 
 class _$HomeStateLoadFailure implements HomeStateLoadFailure {
   const _$HomeStateLoadFailure(
-      {required this.failure, this.isListenerState = false});
+      {required this.viewModel,
+      required this.failure,
+      this.isListenerState = false});
 
+  @override
+  final HomeViewModel viewModel;
   @override
   final Failure failure;
   @override
@@ -1476,7 +1524,7 @@ class _$HomeStateLoadFailure implements HomeStateLoadFailure {
 
   @override
   String toString() {
-    return 'HomeState.loadFailure(failure: $failure, isListenerState: $isListenerState)';
+    return 'HomeState.loadFailure(viewModel: $viewModel, failure: $failure, isListenerState: $isListenerState)';
   }
 
   @override
@@ -1484,13 +1532,16 @@ class _$HomeStateLoadFailure implements HomeStateLoadFailure {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$HomeStateLoadFailure &&
+            (identical(other.viewModel, viewModel) ||
+                other.viewModel == viewModel) &&
             (identical(other.failure, failure) || other.failure == failure) &&
             (identical(other.isListenerState, isListenerState) ||
                 other.isListenerState == isListenerState));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, failure, isListenerState);
+  int get hashCode =>
+      Object.hash(runtimeType, viewModel, failure, isListenerState);
 
   @JsonKey(ignore: true)
   @override
@@ -1502,50 +1553,56 @@ class _$HomeStateLoadFailure implements HomeStateLoadFailure {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(bool isListenerState) initial,
-    required TResult Function(HomeViewModel? viewModel, bool isListenerState)
+    required TResult Function(HomeViewModel viewModel, bool isListenerState)
+        initial,
+    required TResult Function(HomeViewModel viewModel, bool isListenerState)
         loading,
-    required TResult Function(Failure failure, bool isListenerState)
+    required TResult Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)
         loadFailure,
     required TResult Function(HomeViewModel viewModel, bool isListenerState)
         loadSuccess,
-    required TResult Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)
+    required TResult Function(String title, String message,
+            HomeViewModel viewModel, bool shouldPopOut, bool isListenerState)
         displayAlert,
   }) {
-    return loadFailure(failure, isListenerState);
+    return loadFailure(viewModel, failure, isListenerState);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(bool isListenerState)? initial,
-    TResult? Function(HomeViewModel? viewModel, bool isListenerState)? loading,
-    TResult? Function(Failure failure, bool isListenerState)? loadFailure,
+    TResult? Function(HomeViewModel viewModel, bool isListenerState)? initial,
+    TResult? Function(HomeViewModel viewModel, bool isListenerState)? loading,
+    TResult? Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)?
+        loadFailure,
     TResult? Function(HomeViewModel viewModel, bool isListenerState)?
         loadSuccess,
-    TResult? Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)?
+    TResult? Function(String title, String message, HomeViewModel viewModel,
+            bool shouldPopOut, bool isListenerState)?
         displayAlert,
   }) {
-    return loadFailure?.call(failure, isListenerState);
+    return loadFailure?.call(viewModel, failure, isListenerState);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(bool isListenerState)? initial,
-    TResult Function(HomeViewModel? viewModel, bool isListenerState)? loading,
-    TResult Function(Failure failure, bool isListenerState)? loadFailure,
+    TResult Function(HomeViewModel viewModel, bool isListenerState)? initial,
+    TResult Function(HomeViewModel viewModel, bool isListenerState)? loading,
+    TResult Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)?
+        loadFailure,
     TResult Function(HomeViewModel viewModel, bool isListenerState)?
         loadSuccess,
-    TResult Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)?
+    TResult Function(String title, String message, HomeViewModel viewModel,
+            bool shouldPopOut, bool isListenerState)?
         displayAlert,
     required TResult orElse(),
   }) {
     if (loadFailure != null) {
-      return loadFailure(failure, isListenerState);
+      return loadFailure(viewModel, failure, isListenerState);
     }
     return orElse();
   }
@@ -1593,9 +1650,12 @@ class _$HomeStateLoadFailure implements HomeStateLoadFailure {
 
 abstract class HomeStateLoadFailure implements HomeState {
   const factory HomeStateLoadFailure(
-      {required final Failure failure,
+      {required final HomeViewModel viewModel,
+      required final Failure failure,
       final bool isListenerState}) = _$HomeStateLoadFailure;
 
+  @override
+  HomeViewModel get viewModel;
   Failure get failure;
   @override
   bool get isListenerState;
@@ -1684,15 +1744,17 @@ class _$HomeStateLoadSuccess implements HomeStateLoadSuccess {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(bool isListenerState) initial,
-    required TResult Function(HomeViewModel? viewModel, bool isListenerState)
+    required TResult Function(HomeViewModel viewModel, bool isListenerState)
+        initial,
+    required TResult Function(HomeViewModel viewModel, bool isListenerState)
         loading,
-    required TResult Function(Failure failure, bool isListenerState)
+    required TResult Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)
         loadFailure,
     required TResult Function(HomeViewModel viewModel, bool isListenerState)
         loadSuccess,
-    required TResult Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)
+    required TResult Function(String title, String message,
+            HomeViewModel viewModel, bool shouldPopOut, bool isListenerState)
         displayAlert,
   }) {
     return loadSuccess(viewModel, isListenerState);
@@ -1701,13 +1763,15 @@ class _$HomeStateLoadSuccess implements HomeStateLoadSuccess {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(bool isListenerState)? initial,
-    TResult? Function(HomeViewModel? viewModel, bool isListenerState)? loading,
-    TResult? Function(Failure failure, bool isListenerState)? loadFailure,
+    TResult? Function(HomeViewModel viewModel, bool isListenerState)? initial,
+    TResult? Function(HomeViewModel viewModel, bool isListenerState)? loading,
+    TResult? Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)?
+        loadFailure,
     TResult? Function(HomeViewModel viewModel, bool isListenerState)?
         loadSuccess,
-    TResult? Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)?
+    TResult? Function(String title, String message, HomeViewModel viewModel,
+            bool shouldPopOut, bool isListenerState)?
         displayAlert,
   }) {
     return loadSuccess?.call(viewModel, isListenerState);
@@ -1716,13 +1780,15 @@ class _$HomeStateLoadSuccess implements HomeStateLoadSuccess {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(bool isListenerState)? initial,
-    TResult Function(HomeViewModel? viewModel, bool isListenerState)? loading,
-    TResult Function(Failure failure, bool isListenerState)? loadFailure,
+    TResult Function(HomeViewModel viewModel, bool isListenerState)? initial,
+    TResult Function(HomeViewModel viewModel, bool isListenerState)? loading,
+    TResult Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)?
+        loadFailure,
     TResult Function(HomeViewModel viewModel, bool isListenerState)?
         loadSuccess,
-    TResult Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)?
+    TResult Function(String title, String message, HomeViewModel viewModel,
+            bool shouldPopOut, bool isListenerState)?
         displayAlert,
     required TResult orElse(),
   }) {
@@ -1778,6 +1844,7 @@ abstract class HomeStateLoadSuccess implements HomeState {
       {required final HomeViewModel viewModel,
       final bool isListenerState}) = _$HomeStateLoadSuccess;
 
+  @override
   HomeViewModel get viewModel;
   @override
   bool get isListenerState;
@@ -1796,7 +1863,11 @@ abstract class _$$HomeStateDisplayAlertCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String title, String message, bool shouldPopOut, bool isListenerState});
+      {String title,
+      String message,
+      HomeViewModel viewModel,
+      bool shouldPopOut,
+      bool isListenerState});
 }
 
 /// @nodoc
@@ -1812,6 +1883,7 @@ class __$$HomeStateDisplayAlertCopyWithImpl<$Res>
   $Res call({
     Object? title = null,
     Object? message = null,
+    Object? viewModel = null,
     Object? shouldPopOut = null,
     Object? isListenerState = null,
   }) {
@@ -1824,6 +1896,10 @@ class __$$HomeStateDisplayAlertCopyWithImpl<$Res>
           ? _value.message
           : message // ignore: cast_nullable_to_non_nullable
               as String,
+      viewModel: null == viewModel
+          ? _value.viewModel
+          : viewModel // ignore: cast_nullable_to_non_nullable
+              as HomeViewModel,
       shouldPopOut: null == shouldPopOut
           ? _value.shouldPopOut
           : shouldPopOut // ignore: cast_nullable_to_non_nullable
@@ -1842,6 +1918,7 @@ class _$HomeStateDisplayAlert implements HomeStateDisplayAlert {
   const _$HomeStateDisplayAlert(
       {required this.title,
       required this.message,
+      required this.viewModel,
       this.shouldPopOut = false,
       this.isListenerState = true});
 
@@ -1849,6 +1926,8 @@ class _$HomeStateDisplayAlert implements HomeStateDisplayAlert {
   final String title;
   @override
   final String message;
+  @override
+  final HomeViewModel viewModel;
   @override
   @JsonKey()
   final bool shouldPopOut;
@@ -1858,7 +1937,7 @@ class _$HomeStateDisplayAlert implements HomeStateDisplayAlert {
 
   @override
   String toString() {
-    return 'HomeState.displayAlert(title: $title, message: $message, shouldPopOut: $shouldPopOut, isListenerState: $isListenerState)';
+    return 'HomeState.displayAlert(title: $title, message: $message, viewModel: $viewModel, shouldPopOut: $shouldPopOut, isListenerState: $isListenerState)';
   }
 
   @override
@@ -1868,6 +1947,8 @@ class _$HomeStateDisplayAlert implements HomeStateDisplayAlert {
             other is _$HomeStateDisplayAlert &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.message, message) || other.message == message) &&
+            (identical(other.viewModel, viewModel) ||
+                other.viewModel == viewModel) &&
             (identical(other.shouldPopOut, shouldPopOut) ||
                 other.shouldPopOut == shouldPopOut) &&
             (identical(other.isListenerState, isListenerState) ||
@@ -1875,8 +1956,8 @@ class _$HomeStateDisplayAlert implements HomeStateDisplayAlert {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, title, message, shouldPopOut, isListenerState);
+  int get hashCode => Object.hash(
+      runtimeType, title, message, viewModel, shouldPopOut, isListenerState);
 
   @JsonKey(ignore: true)
   @override
@@ -1888,50 +1969,59 @@ class _$HomeStateDisplayAlert implements HomeStateDisplayAlert {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(bool isListenerState) initial,
-    required TResult Function(HomeViewModel? viewModel, bool isListenerState)
+    required TResult Function(HomeViewModel viewModel, bool isListenerState)
+        initial,
+    required TResult Function(HomeViewModel viewModel, bool isListenerState)
         loading,
-    required TResult Function(Failure failure, bool isListenerState)
+    required TResult Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)
         loadFailure,
     required TResult Function(HomeViewModel viewModel, bool isListenerState)
         loadSuccess,
-    required TResult Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)
+    required TResult Function(String title, String message,
+            HomeViewModel viewModel, bool shouldPopOut, bool isListenerState)
         displayAlert,
   }) {
-    return displayAlert(title, message, shouldPopOut, isListenerState);
+    return displayAlert(
+        title, message, viewModel, shouldPopOut, isListenerState);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(bool isListenerState)? initial,
-    TResult? Function(HomeViewModel? viewModel, bool isListenerState)? loading,
-    TResult? Function(Failure failure, bool isListenerState)? loadFailure,
+    TResult? Function(HomeViewModel viewModel, bool isListenerState)? initial,
+    TResult? Function(HomeViewModel viewModel, bool isListenerState)? loading,
+    TResult? Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)?
+        loadFailure,
     TResult? Function(HomeViewModel viewModel, bool isListenerState)?
         loadSuccess,
-    TResult? Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)?
+    TResult? Function(String title, String message, HomeViewModel viewModel,
+            bool shouldPopOut, bool isListenerState)?
         displayAlert,
   }) {
-    return displayAlert?.call(title, message, shouldPopOut, isListenerState);
+    return displayAlert?.call(
+        title, message, viewModel, shouldPopOut, isListenerState);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(bool isListenerState)? initial,
-    TResult Function(HomeViewModel? viewModel, bool isListenerState)? loading,
-    TResult Function(Failure failure, bool isListenerState)? loadFailure,
+    TResult Function(HomeViewModel viewModel, bool isListenerState)? initial,
+    TResult Function(HomeViewModel viewModel, bool isListenerState)? loading,
+    TResult Function(
+            HomeViewModel viewModel, Failure failure, bool isListenerState)?
+        loadFailure,
     TResult Function(HomeViewModel viewModel, bool isListenerState)?
         loadSuccess,
-    TResult Function(String title, String message, bool shouldPopOut,
-            bool isListenerState)?
+    TResult Function(String title, String message, HomeViewModel viewModel,
+            bool shouldPopOut, bool isListenerState)?
         displayAlert,
     required TResult orElse(),
   }) {
     if (displayAlert != null) {
-      return displayAlert(title, message, shouldPopOut, isListenerState);
+      return displayAlert(
+          title, message, viewModel, shouldPopOut, isListenerState);
     }
     return orElse();
   }
@@ -1981,11 +2071,14 @@ abstract class HomeStateDisplayAlert implements HomeState {
   const factory HomeStateDisplayAlert(
       {required final String title,
       required final String message,
+      required final HomeViewModel viewModel,
       final bool shouldPopOut,
       final bool isListenerState}) = _$HomeStateDisplayAlert;
 
   String get title;
   String get message;
+  @override
+  HomeViewModel get viewModel;
   bool get shouldPopOut;
   @override
   bool get isListenerState;
