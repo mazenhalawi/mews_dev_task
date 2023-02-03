@@ -25,14 +25,7 @@ class _HomePageState extends State<HomePage> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _textController = TextEditingController();
   late final _scrollControllerListener = () {
-    final hasMoreRecords = context.read<HomeBloc>().hasMoreRecords;
-    final isFetchingRecords = context.read<HomeBloc>().isFetchingRecords;
-    final didPassAutoFetchZone = _scrollController.offset >
-        (_scrollController.position.maxScrollExtent * 0.95);
-
-    if (didPassAutoFetchZone && hasMoreRecords && !isFetchingRecords) {
-      context.read<HomeBloc>().add(const HomeEvent.requestMoreRecords());
-    }
+    context.read<HomeBloc>().add(const HomeEvent.requestMoreRecords());
   };
 
   @override

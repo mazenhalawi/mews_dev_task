@@ -35,9 +35,6 @@ class HomeRepository {
       final result = SearchMoviesResponse.fromJson(json);
       _cache[request.searchText.toLowerCase()] = result;
 
-      print(
-          'FOUND RESULT FOR SEARCH: ${request.searchText}: ${result.totalResults}');
-
       return Right(result);
     } on ConnectionFailure catch (e) {
       return Left(e);
