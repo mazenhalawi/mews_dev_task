@@ -350,10 +350,10 @@ class __$$MovieDetailStateLoadSuccessCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? viewModel = freezed,
+    Object? viewModel = null,
   }) {
     return _then(_$MovieDetailStateLoadSuccess(
-      viewModel: freezed == viewModel
+      viewModel: null == viewModel
           ? _value.viewModel
           : viewModel // ignore: cast_nullable_to_non_nullable
               as MovieDetailViewModel,
@@ -379,12 +379,12 @@ class _$MovieDetailStateLoadSuccess implements MovieDetailStateLoadSuccess {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$MovieDetailStateLoadSuccess &&
-            const DeepCollectionEquality().equals(other.viewModel, viewModel));
+            (identical(other.viewModel, viewModel) ||
+                other.viewModel == viewModel));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(viewModel));
+  int get hashCode => Object.hash(runtimeType, viewModel);
 
   @JsonKey(ignore: true)
   @override
